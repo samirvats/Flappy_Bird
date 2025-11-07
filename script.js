@@ -14,20 +14,39 @@ let birdY = 150;
 let birdVelocity = 0;
 const gravity = 0.4;
 let score = 0;
+let finalScore = 0;
 let gap = 100;
 let pipes = [];
+let gameOver = false;
 
 pipes[0] = {
     x: canvas.width,
-    y: 0
+    y: 0,
+    passed: false
 };
 
 // Bird flap
-document.addEventListener('keydown', () => {
-    birdVelocity = -6;
+document.addEventListener('keydown', (e) => {
+    if (gameOver) {
+        location.reload();
+    }
+    if (e.code === 'ArrowUp') {
+        birdVelocity = -6;
+    } else if (e.code === 'ArrowDown') {
+        birdVelocity = 6;
+    }
 });
 
 function draw() {
+    if (gameOver) {
+        ctx.fillStyle = '#000';
+        ctx.font = '30px Verdana';
+        ctx.fillText('Game Over', canvas.width / 2 - 100, canvas.height / 2 - 50);
+        ctx.font = '20px Verdana';
+        ctx.fillText('Final Score: ' + finalScore, canvas.width / 2 - 100, canvas.height / 2);
+        ctx.fillText('Press any key to restart', canvas.width / 2 - 120, canvas.height / 2 + 50);
+        return;
+    }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw bird
@@ -50,19 +69,28 @@ function draw() {
         if (pipes[i].x == 125) {
             pipes.push({
                 x: canvas.width,
-                y: Math.floor(Math.random() * pipeImg.height) - pipeImg.height
+                y: Math.floor(Math.random() * pipeImg.height) - pipeImg.height,
+                passed: false
             });
         }
 
         // Collision detection
         if (birdX + birdImg.width >= pipes[i].x && birdX <= pipes[i].x + pipeImg.width &&
-            (birdY <= pipes[i].y + pipeImg.height || birdY + birdImg.height >= pipes[i].y + pipeImg.height + gap) ||
-            birdY + birdImg.height >= canvas.height) {
-            location.reload(); // Reload the page to restart the game
+            (birdY <= pipes[i].y + pipeImg.height || birdY + birdImg.height >= pipes[i].y + pipeImg.height + gap)) {
+            gameOver = true;
+            finalScore = score;
         }
 
-        if (pipes[i].x == 5) {
-            score++;
+        // Score
+        if (!pipes[i].passed && pipes[i].x < birdX) {
+            score += 10;
+            pipes[i].passed = true;
+        }
+
+        // Remove pipes that are off-screen
+        if (pipes[i].x < -pipeImg.width) {
+            pipes.splice(i, 1);
+            i--; // Decrement i to avoid skipping the next pipe
         }
     }
 
