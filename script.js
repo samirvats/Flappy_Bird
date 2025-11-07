@@ -15,7 +15,7 @@ let birdVelocity = 0;
 const gravity = 0.4;
 let score = 0;
 let finalScore = 0;
-let gap = 100;
+let gap = 150;
 let pipes = [];
 let gameOver = false;
 
